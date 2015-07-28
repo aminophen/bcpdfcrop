@@ -12,12 +12,21 @@ ZR さん (@zr-tex8r) のバッチファイルをもとに fork した tcpdfcrop
 - pdfcrop.pl（Perl スクリプト）
     - pdfcrop.pl (by Oberdiek) https://www.ctan.org/pkg/pdfcrop
 
+### 動作条件
+
+- Windows のコマンド プロンプトなら動くと思います。PowerShell では動作未確認です（動く場合もありますが，引数指定によっては期待通りに動かない場合もあります）。
+- TeX ディストリビューションと Ghostscript が正しくインストールされている前提です（TeX Live，W32TeX で確認）。
+  実際に使用するプログラムは以下のとおりです：
+    - pdftex.exe
+    - extractbb.exe
+    - rungs.exe (gswin32c.exe or gswin64c.exe)
+
 ### 使い方
 
 コマンドラインから
 
 ~~~~
-$ bcpdfcrop [/h] [/s] in.pdf [out.pdf] [page-range] [left-margin] [top-margin] [right-margin] [bottom-margin]
+$ bcpdfcrop [/d] [/h] [/s] in.pdf [out.pdf] [page-range] [left-margin] [top-margin] [right-margin] [bottom-margin]
 ~~~~
 
 という形式で実行します。
@@ -36,7 +45,8 @@ $ bcpdfcrop [/h] [/s] in.pdf [out.pdf] [page-range] [left-margin] [top-margin] [
 - `<***-margin>` は，余白を bp 単位で指定します。全ページに同じ余白が付きます。左・上・右・下の順になります。
     - `$ bcpdfcrop in.pdf out.pdf 3-10 5 10 15 20` ： 「左に5bp，上に10bp，右に15bp，下に20bp」の余白が付きます。
 - 引数を空にしたい場合は，単に `""` とすると期待通りになるかもしれません。
-- オプションとして，`/h` と `/s` を最初に指定することができます（両方使う場合は `/h`, `/s` の順にしてください）。
+- オプションとして，`/d` や `/h` や `/s` を最初に指定することができます（複数使う場合は `/d`，`/h`, `/s` の順にしてください）。
+    - `/d` オプションは，デバッグ用に一時ファイルを削除せず残します (debug) 。
     - `/h` オプションは，BoundingBox の代わりに HiResBoundingBox を使います (hires) 。
     - `/s` オプションは，複数ページ PDF の処理で各ページを個別のファイルに分割して出力します (separate, split) 。
       これはオリジナルの Perl スクリプトにない機能です。
@@ -72,6 +82,8 @@ $ bcpdfcrop [/h] [/s] in.pdf [out.pdf] [page-range] [left-margin] [top-margin] [
 - v0.1.0 (2015-07-28)
     - tcpdfcrop.bat (v0.9.3) の内部処理を変更し，`/s` オプションを追加して公開。
     - tcpdfcrop の tc (TeX comedian) らしさがなくなったので，bc (Batch comedian) に変更。
+- v0.1.1 (2015-07-29)
+    - デバッグオプションとして `/d` オプションを追加。
 
 --------------------
 Hironobu YAMASHITA (aka. "Acetaminophen" or "@aminophen")

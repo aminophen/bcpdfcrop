@@ -1,8 +1,14 @@
 @echo off
-echo bcpdfcrop v0.1.0 (2015-07-28) [forked from tcpdfcrop v0.9.3 (2015-07-25)]
+echo bcpdfcrop v0.1.1 (2015-07-29) written by @aminophen
 set BATNAME=%~n0
 set ERROR=0
 setlocal enabledelayedexpansion
+if /I "%1"=="/d" (
+  set DEBUGLEV=1
+  shift
+) else (
+  set DEBUGLEV=0
+)
 if /I "%1"=="/h" (
   set BBOX=HiResBoundingBox
   shift
@@ -21,10 +27,11 @@ set TODIR=%~dp2
 set TO=%~n2
 set RANGE=%~3
 set TPX=_tcpc
-set CROPTEMP=croptemp
+set CROPTEMP=_croptemp
 if "%FROM%"=="" (
-  echo Usage: %BATNAME% [/h] [/s] in.pdf [out.pdf] [page-range] [left-margin] [top-margin] [right-margin] [bottom-margin]
+  echo Usage: %BATNAME% [/d] [/h] [/s] in.pdf [out.pdf] [page-range] [left-margin] [top-margin] [right-margin] [bottom-margin]
   echo   Options:
+  echo     /d    Do NOT delete temporary files for debug.
   echo     /h    Use HiResBoundingBox instead of BoundingBox.
   echo     /s    Save multipage PDF into separate PDF files.
 )
@@ -43,7 +50,7 @@ set NUM=%NUM:* =%
 type "%CROPTEMP%.xbb" | find "%%PDFVersion: " > "%CROPTEMP%-version.txt"
 set /P VERSION=<"%CROPTEMP%-version.txt"
 set VERSION=%VERSION:*.=%
-del "%CROPTEMP%.xbb" "%CROPTEMP%-pages.txt" "%CROPTEMP%-version.txt"
+if %DEBUGLEV% equ 0 del "%CROPTEMP%.xbb" "%CROPTEMP%-pages.txt" "%CROPTEMP%-version.txt"
 for /F "tokens=1,2 delims=-" %%m in ("%RANGE%") do (
   set FIRST=%%m
   set LAST=%%n
@@ -80,7 +87,7 @@ for /L %%i in (%FIRST%,1,%LAST%) do (
   if %SEPARATE% equ 1 (
     echo \input %TPX%n.tex \proc %%i [!PROCBBOX!] \end >%TPX%%%i.tex
     pdftex -no-shell-escape -interaction=batchmode %TPX%%%i.tex 1>nul
-    del %TPX%%%i.tex %TPX%%%i.log
+    if %DEBUGLEV% equ 0 del %TPX%%%i.tex %TPX%%%i.log
     if exist %TPX%%%i.pdf (
       move "%TPX%%%i.pdf" "%TODIR%%TO%-%%i.pdf" 1>nul
     ) else (
@@ -94,7 +101,7 @@ for /L %%i in (%FIRST%,1,%LAST%) do (
 if %SEPARATE% equ 0 (
   echo \end >>%TPX%n.tex
   pdftex -no-shell-escape -interaction=batchmode %TPX%n.tex 1>nul
-  del %TPX%n.log
+  if %DEBUGLEV% equ 0 del %TPX%n.log
   if exist %TPX%n.pdf (
     move "%TPX%n.pdf" "%TODIR%%TO%.pdf" 1>nul
   ) else (
@@ -102,7 +109,7 @@ if %SEPARATE% equ 0 (
     set ERROR=1
   )
 )
-for /L %%i in (%FIRST%,1,%LAST%) do del %TPX%%%i.txt
-del %TPX%n.tex %CROPTEMP%.pdf
+if %DEBUGLEV% equ 0 for /L %%i in (%FIRST%,1,%LAST%) do del %TPX%%%i.txt
+if %DEBUGLEV% equ 0 del %TPX%n.tex %CROPTEMP%.pdf
 if %ERROR% equ 1 exit /B
 echo ==^> %FIRST%-%LAST% page(s) written on "%TODIR%%TO%.pdf".
