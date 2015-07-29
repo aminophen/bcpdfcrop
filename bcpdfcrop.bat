@@ -1,5 +1,5 @@
 @echo off
-echo bcpdfcrop v0.1.1 (2015-07-29) written by @aminophen
+echo bcpdfcrop v0.1.2 (2015-07-30) written by @aminophen
 set BATNAME=%~n0
 set ERROR=0
 setlocal enabledelayedexpansion
@@ -26,7 +26,7 @@ set FROM=%~n1
 set TODIR=%~dp2
 set TO=%~n2
 set RANGE=%~3
-set TPX=_tcpc
+set TPX=_bcpc
 set CROPTEMP=_croptemp
 if "%FROM%"=="" (
   echo Usage: %BATNAME% [/d] [/h] [/s] in.pdf [out.pdf] [page-range] [left-margin] [top-margin] [right-margin] [bottom-margin]
@@ -65,6 +65,14 @@ if "%LAST%"=="" (
   )
 )
 if "%LAST%"=="*" set LAST=%NUM%
+if %FIRST% lss 1 (
+  echo Invalid page number, should be ^>= 1.
+  set FIRST=1
+)
+if %LAST% gtr %NUM% (
+  echo Page %LAST% does not exist, should be ^<= %NUM%.
+  set LAST=%NUM%
+)
 set LMARGIN=%~4
 set TMARGIN=%~5
 set RMARGIN=%~6
@@ -82,6 +90,7 @@ echo \setbox0=\hbox{\pdfximage page #1 mediabox{%CROPTEMP%.pdf}\pdfrefximage\pdf
 echo \ht0=\pdfpageheight \shipout\box0\relax} >>%TPX%n.tex
 for /L %%i in (%FIRST%,1,%LAST%) do (
   rungs -dBATCH -dNOPAUSE -q -sDEVICE=bbox -dFirstPage=%%i -dLastPage=%%i "%CROPTEMP%.pdf" 2>&1 | find "%%%BBOX%: " >%TPX%%%i.txt
+  set PROCBBOX=%%%BBOX%: 0 0 0 0
   set /P PROCBBOX=<"%TPX%%%i.txt"
   set PROCBBOX=!PROCBBOX:* =!
   if %SEPARATE% equ 1 (

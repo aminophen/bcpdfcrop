@@ -63,7 +63,7 @@ $ bcpdfcrop [/d] [/h] [/s] in.pdf [out.pdf] [page-range] [left-margin] [top-marg
 - ページ範囲指定機能・分割出力機能がオリジナルの pdfcrop.pl にはない機能で，bcpdfcrop.bat の優れた点だと思っています。
 - 作業ディレクトリとして，Windows 環境変数の `%TEMP%` の場所を使います（この点も pdfcrop.pl とは異なります；もし値が空の場合はカレントディレクトリを使います）。
 
-### 今気づいている点・制限事項 (v0.1.0) ：
+### 今気づいている点・制限事項 (v0.1.2) ：
 
 - pdfcrop.pl とは引数の指定の仕方が異なります。
 - pdfcrop.pl のような多用なオプション指定には対応していません（余白のみ指定可能）。
@@ -84,6 +84,8 @@ $ bcpdfcrop [/d] [/h] [/s] in.pdf [out.pdf] [page-range] [left-margin] [top-marg
     - tcpdfcrop の tc (TeX comedian) らしさがなくなったので，bc (Batch comedian) に変更。
 - v0.1.1 (2015-07-29)
     - デバッグオプションとして `/d` オプションを追加。
+- v0.1.2 (2015-07-30)
+    - ページ範囲指定が不正な場合に対処。
 
 --------------------
 Hironobu YAMASHITA (aka. "Acetaminophen" or "@aminophen")
