@@ -1,8 +1,8 @@
 @echo off
-echo bcpdfcrop v0.1.2 (2015-07-30) written by @aminophen
+echo bcpdfcrop v0.1.3 (2015-07-31) written by Hironobu YAMASHITA
+setlocal enabledelayedexpansion
 set BATNAME=%~n0
 set ERROR=0
-setlocal enabledelayedexpansion
 if /I "%1"=="/d" (
   set DEBUGLEV=1
   shift
@@ -36,7 +36,7 @@ if "%FROM%"=="" (
   echo     /s    Save multipage PDF into separate PDF files.
 )
 if not exist "%FROMDIR%%FROM%.pdf" exit /B
-if not "%TEMP%"=="" cd "%TEMP%"
+if not "%TEMP%"=="" cd /D "%TEMP%"
 copy "%FROMDIR%%FROM%.pdf" "%CROPTEMP%.pdf" 1>nul
 if "%TO%"=="" set TO=%FROM%-crop
 if "%TODIR%"=="" set TODIR=%FROMDIR%
@@ -88,13 +88,31 @@ echo \advance\pdfhorigin by %LMARGIN%bp\relax \advance\pdfpagewidth by %LMARGIN%
 echo \advance\pdfvorigin by -%BMARGIN%bp\relax \advance\pdfpageheight by %BMARGIN%bp\relax \advance\pdfpageheight by %TMARGIN%bp\relax >>%TPX%n.tex
 echo \setbox0=\hbox{\pdfximage page #1 mediabox{%CROPTEMP%.pdf}\pdfrefximage\pdflastximage} >>%TPX%n.tex
 echo \ht0=\pdfpageheight \shipout\box0\relax} >>%TPX%n.tex
+echo \def\procinclude#1{\pdfhorigin0bp \pdfvorigin0bp >>%TPX%n.tex
+echo \setbox0=\hbox{\pdfximage page #1 mediabox{%CROPTEMP%.pdf}\pdfrefximage\pdflastximage} >>%TPX%n.tex
+echo \pdfpagewidth\wd0\relax \pdfpageheight\dimexpr\ht0+\dp0\relax \shipout\hbox{\raise\dp0\box0\relax}} >>%TPX%n.tex
 for /L %%i in (%FIRST%,1,%LAST%) do (
   rungs -dBATCH -dNOPAUSE -q -sDEVICE=bbox -dFirstPage=%%i -dLastPage=%%i "%CROPTEMP%.pdf" 2>&1 | find "%%%BBOX%: " >%TPX%%%i.txt
   set PROCBBOX=%%%BBOX%: 0 0 0 0
   set /P PROCBBOX=<"%TPX%%%i.txt"
   set PROCBBOX=!PROCBBOX:* =!
+  if "!PROCBBOX!"=="0 0 0 0" (
+    set VALIDBOX=0
+  ) else (
+    if "!PROCBBOX!"=="0.000000 0.000000 0.000000 0.000000" (
+      set VALIDBOX=0
+    ) else (
+      set VALIDBOX=1
+    )
+  )
   if %SEPARATE% equ 1 (
-    echo \input %TPX%n.tex \proc %%i [!PROCBBOX!] \end >%TPX%%%i.tex
+    if !VALIDBOX! equ 1 (
+      echo \input %TPX%n.tex \proc %%i [!PROCBBOX!] \end >%TPX%%%i.tex
+    ) else (
+      echo Empty %BBOX% is returned by Ghostscript on page %%i.
+      echo I will try to include this page in its original size...
+      echo \input %TPX%n.tex \procinclude %%i \end >%TPX%%%i.tex
+    )
     pdftex -no-shell-escape -interaction=batchmode %TPX%%%i.tex 1>nul
     if %DEBUGLEV% equ 0 del %TPX%%%i.tex %TPX%%%i.log
     if exist %TPX%%%i.pdf (
@@ -104,7 +122,13 @@ for /L %%i in (%FIRST%,1,%LAST%) do (
       set ERROR=1
     )
   ) else (
-    echo \proc %%i [!PROCBBOX!] >>%TPX%n.tex
+    if !VALIDBOX! equ 1 (
+      echo \proc %%i [!PROCBBOX!] >>%TPX%n.tex
+    ) else (
+      echo Empty %BBOX% is returned by Ghostscript on page %%i.
+      echo I will try to include this page in its original size...
+      echo \procinclude %%i >>%TPX%n.tex
+    )
   )
 )
 if %SEPARATE% equ 0 (
