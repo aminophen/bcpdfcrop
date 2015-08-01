@@ -1,5 +1,5 @@
 @echo off
-echo bcpdfcrop v0.1.3 (2015-07-31) written by Hironobu YAMASHITA
+echo bcpdfcrop v0.1.4 (2015-08-01) written by Hironobu YAMASHITA
 setlocal enabledelayedexpansion
 set BATNAME=%~n0
 set ERROR=0
@@ -44,10 +44,15 @@ if "%TODIR%%TO%"=="%FROMDIR%%FROM%" set TO=%FROM%-crop
 if exist "%TODIR%%TO%.pdf" del "%TODIR%%TO%.pdf"
 if exist "%TODIR%%TO%.pdf" exit /B
 extractbb "%CROPTEMP%.pdf"
-type "%CROPTEMP%.xbb" | find "%%Pages: " > "%CROPTEMP%-pages.txt"
+if not exist "%CROPTEMP%.xbb" (
+  echo Failed to run extractbb, exiting...
+  if %DEBUGLEV% equ 0 del %CROPTEMP%.pdf
+  exit /B
+)
+type "%CROPTEMP%.xbb" | find "%%Pages: " >%CROPTEMP%-pages.txt
 set /P NUM=<"%CROPTEMP%-pages.txt"
 set NUM=%NUM:* =%
-type "%CROPTEMP%.xbb" | find "%%PDFVersion: " > "%CROPTEMP%-version.txt"
+type "%CROPTEMP%.xbb" | find "%%PDFVersion: " >%CROPTEMP%-version.txt
 set /P VERSION=<"%CROPTEMP%-version.txt"
 set VERSION=%VERSION:*.=%
 if %DEBUGLEV% equ 0 del "%CROPTEMP%.xbb" "%CROPTEMP%-pages.txt" "%CROPTEMP%-version.txt"
@@ -92,9 +97,21 @@ echo \def\procinclude#1{\pdfhorigin0bp \pdfvorigin0bp >>%TPX%n.tex
 echo \setbox0=\hbox{\pdfximage page #1 mediabox{%CROPTEMP%.pdf}\pdfrefximage\pdflastximage} >>%TPX%n.tex
 echo \pdfpagewidth\wd0\relax \pdfpageheight\dimexpr\ht0+\dp0\relax \shipout\hbox{\raise\dp0\box0\relax}} >>%TPX%n.tex
 for /L %%i in (%FIRST%,1,%LAST%) do (
-  rungs -dBATCH -dNOPAUSE -q -sDEVICE=bbox -dFirstPage=%%i -dLastPage=%%i "%CROPTEMP%.pdf" 2>&1 | find "%%%BBOX%: " >%TPX%%%i.txt
+  rungs -dBATCH -dNOPAUSE -q -sDEVICE=bbox -dFirstPage=%%i -dLastPage=%%i "%CROPTEMP%.pdf" 2>%TPX%%%i.txt
+  type %TPX%%%i.txt | find "%%%BBOX%: " >%TPX%%%i-box.txt
+  for %%f in (%TPX%%%i.txt) do set SIZEGS=%%~zf
+  for %%f in (%TPX%%%i-box.txt) do set SIZEBOX=%%~zf
+  if !SIZEBOX! equ 0 (
+    if not !SIZEGS! equ 0 (
+      type %TPX%%%i.txt
+      echo Failed to run Ghostscript, exiting...
+      if %DEBUGLEV% equ 0 for /L %%j in (%FIRST%,1,%%i) do del %TPX%%%j.txt %TPX%%%j-box.txt %TPX%%%j.tex
+      if %DEBUGLEV% equ 0 del %TPX%n.tex %CROPTEMP%.pdf
+      exit /B
+    )
+  )
   set PROCBBOX=%%%BBOX%: 0 0 0 0
-  set /P PROCBBOX=<"%TPX%%%i.txt"
+  set /P PROCBBOX=<"%TPX%%%i-box.txt"
   set PROCBBOX=!PROCBBOX:* =!
   if "!PROCBBOX!"=="0 0 0 0" (
     set VALIDBOX=0
@@ -114,6 +131,12 @@ for /L %%i in (%FIRST%,1,%LAST%) do (
       echo \input %TPX%n.tex \procinclude %%i \end >%TPX%%%i.tex
     )
     pdftex -no-shell-escape -interaction=batchmode %TPX%%%i.tex 1>nul
+    if not exist "%TPX%%%i.log" (
+      echo Failed to run pdfTeX, exiting...
+      if %DEBUGLEV% equ 0 for /L %%j in (%FIRST%,1,%%i) do del %TPX%%%j.txt %TPX%%%j-box.txt %TPX%%%j.tex
+      if %DEBUGLEV% equ 0 del %TPX%n.tex %CROPTEMP%.pdf
+      exit /B
+    )
     if %DEBUGLEV% equ 0 del %TPX%%%i.tex %TPX%%%i.log
     if exist %TPX%%%i.pdf (
       move "%TPX%%%i.pdf" "%TODIR%%TO%-%%i.pdf" 1>nul
@@ -134,6 +157,12 @@ for /L %%i in (%FIRST%,1,%LAST%) do (
 if %SEPARATE% equ 0 (
   echo \end >>%TPX%n.tex
   pdftex -no-shell-escape -interaction=batchmode %TPX%n.tex 1>nul
+  if not exist "%TPX%n.log" (
+    echo Failed to run pdfTeX, exiting...
+    if %DEBUGLEV% equ 0 for /L %%i in (%FIRST%,1,%LAST%) do del %TPX%%%i.txt %TPX%%%i-box.txt
+    if %DEBUGLEV% equ 0 del %TPX%n.tex %CROPTEMP%.pdf
+    exit /B
+  )
   if %DEBUGLEV% equ 0 del %TPX%n.log
   if exist %TPX%n.pdf (
     move "%TPX%n.pdf" "%TODIR%%TO%.pdf" 1>nul
@@ -142,7 +171,7 @@ if %SEPARATE% equ 0 (
     set ERROR=1
   )
 )
-if %DEBUGLEV% equ 0 for /L %%i in (%FIRST%,1,%LAST%) do del %TPX%%%i.txt
+if %DEBUGLEV% equ 0 for /L %%i in (%FIRST%,1,%LAST%) do del %TPX%%%i.txt %TPX%%%i-box.txt
 if %DEBUGLEV% equ 0 del %TPX%n.tex %CROPTEMP%.pdf
 if %ERROR% equ 1 exit /B
 echo ==^> %FIRST%-%LAST% page(s) written on "%TODIR%%TO%.pdf".
