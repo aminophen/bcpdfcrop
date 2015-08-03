@@ -1,5 +1,5 @@
 @echo off
-echo bcpdfcrop v0.1.5 (2015-08-02) written by Hironobu YAMASHITA
+echo bcpdfcrop v0.1.6 (2015-08-03) written by Hironobu YAMASHITA
 setlocal enabledelayedexpansion
 set BATNAME=%~n0
 set ERROR=0
@@ -45,19 +45,20 @@ if "%TODIR%"=="" set TODIR=%FROMDIR%
 if "%TODIR%%TO%"=="%FROMDIR%%FROM%" set TO=%FROM%-crop
 copy "%FROMDIR%%FROM%.pdf" "%CROPTEMP%.pdf" 1>nul
 if exist "%CROPTEMP%.xbb" del "%CROPTEMP%.xbb"
+set NUM=1
+set VERSION=4
 extractbb "%CROPTEMP%.pdf"
-if not exist "%CROPTEMP%.xbb" (
-  echo Failed to run extractbb, exiting...
-  if %DEBUGLEV% equ 0 del "%CROPTEMP%.pdf"
-  exit /B
+if exist "%CROPTEMP%.xbb" (
+  type "%CROPTEMP%.xbb" | find "%%Pages: " >%CROPTEMP%-pages.txt
+  set /P NUM=<"%CROPTEMP%-pages.txt"
+  set NUM=!NUM:* =!
+  type "%CROPTEMP%.xbb" | find "%%PDFVersion: " >%CROPTEMP%-version.txt
+  set /P VERSION=<"%CROPTEMP%-version.txt"
+  set VERSION=!VERSION:*.=!
+  if %DEBUGLEV% equ 0 del "%CROPTEMP%.xbb" "%CROPTEMP%-pages.txt" "%CROPTEMP%-version.txt"
+) else (
+  echo Failed to run extractbb, setting default values...
 )
-type "%CROPTEMP%.xbb" | find "%%Pages: " >%CROPTEMP%-pages.txt
-set /P NUM=<"%CROPTEMP%-pages.txt"
-set NUM=%NUM:* =%
-type "%CROPTEMP%.xbb" | find "%%PDFVersion: " >%CROPTEMP%-version.txt
-set /P VERSION=<"%CROPTEMP%-version.txt"
-set VERSION=%VERSION:*.=%
-if %DEBUGLEV% equ 0 del "%CROPTEMP%.xbb" "%CROPTEMP%-pages.txt" "%CROPTEMP%-version.txt"
 for /F "tokens=1,2 delims=-" %%m in ("%RANGE%") do (
   set FIRST=%%m
   set LAST=%%n
@@ -106,10 +107,7 @@ for /L %%i in (%FIRST%,1,%LAST%) do (
   if !SIZEBOX! equ 0 (
     if not !SIZEGS! equ 0 (
       type %TPX%%%i.txt
-      echo Failed to run Ghostscript, exiting...
-      if %DEBUGLEV% equ 0 for /L %%j in (%FIRST%,1,%%i) do del "%TPX%%%j.txt" "%TPX%%%j-box.txt" "%TPX%%%j.tex"
-      if %DEBUGLEV% equ 0 del "%TPX%n.tex" "%CROPTEMP%.pdf"
-      exit /B
+      echo Failed to run Ghostscript, I cannot crop page %%i...
     )
   )
   set PROCBBOX=%%%BBOX%: 0 0 0 0
@@ -128,7 +126,7 @@ for /L %%i in (%FIRST%,1,%LAST%) do (
     if !VALIDBOX! equ 1 (
       echo \input %TPX%n.tex \proc %%i [!PROCBBOX!] \end >%TPX%%%i.tex
     ) else (
-      echo Empty %BBOX% is returned by Ghostscript on page %%i.
+      echo Invalid %BBOX% is returned by Ghostscript on page %%i.
       echo I will try to include this page in its original size...
       echo \input %TPX%n.tex \procinclude %%i \end >%TPX%%%i.tex
     )
@@ -150,14 +148,14 @@ for /L %%i in (%FIRST%,1,%LAST%) do (
         move "%TPX%%%i.pdf" "%TODIR%%TO%-%%i.pdf" 1>nul
       )
     ) else (
-      echo Process of page %%i failed, skipping ...
+      echo Process of page %%i failed, skipping...
       set ERROR=1
     )
   ) else (
     if !VALIDBOX! equ 1 (
       echo \proc %%i [!PROCBBOX!] >>%TPX%n.tex
     ) else (
-      echo Empty %BBOX% is returned by Ghostscript on page %%i.
+      echo Invalid %BBOX% is returned by Ghostscript on page %%i.
       echo I will try to include this page in its original size...
       echo \procinclude %%i >>%TPX%n.tex
     )
