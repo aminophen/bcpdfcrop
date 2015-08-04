@@ -102,6 +102,8 @@ $ bcpdfcrop [/d] [/h] [/s] in.pdf [out.pdf] [page-range] [left-margin] [top-marg
       相変わらず pdfTeX は必須です。
         - extractbb による PDF のページ数とバージョン取得に失敗した場合，それぞれ1ページと1.4として扱います。
         - rungs による描画領域の取得に失敗した場合，ページをクロップせずに元のサイズで取り込みます。
+- v0.1.7 (2015-08-04)
+    - エラーや警告のメッセージを改善。
 
 --------------------
 Hironobu YAMASHITA (aka. "Acetaminophen" or "@aminophen")

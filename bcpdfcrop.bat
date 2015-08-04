@@ -1,8 +1,9 @@
 @echo off
-echo bcpdfcrop v0.1.6 (2015-08-03) written by Hironobu YAMASHITA
+echo bcpdfcrop v0.1.7 (2015-08-04) written by Hironobu YAMASHITA
 setlocal enabledelayedexpansion
 set BATNAME=%~n0
-set ERROR=0
+set BCERROR=0
+set BCWARN=0
 if /I "%1"=="/d" (
   set DEBUGLEV=1
   shift
@@ -107,7 +108,8 @@ for /L %%i in (%FIRST%,1,%LAST%) do (
   if !SIZEBOX! equ 0 (
     if not !SIZEGS! equ 0 (
       type %TPX%%%i.txt
-      echo Failed to run Ghostscript, I cannot crop page %%i...
+      echo Failed to run Ghostscript, so I cannot crop page %%i.
+      set BCWARN=2
     )
   )
   set PROCBBOX=%%%BBOX%: 0 0 0 0
@@ -126,9 +128,10 @@ for /L %%i in (%FIRST%,1,%LAST%) do (
     if !VALIDBOX! equ 1 (
       echo \input %TPX%n.tex \proc %%i [!PROCBBOX!] \end >%TPX%%%i.tex
     ) else (
-      echo Invalid %BBOX% is returned by Ghostscript on page %%i.
+      if !BCWARN! neq 2 echo Invalid %BBOX% is returned by Ghostscript on page %%i.
       echo I will try to include this page in its original size...
       echo \input %TPX%n.tex \procinclude %%i \end >%TPX%%%i.tex
+      set BCWARN=1
     )
     pdftex -no-shell-escape -interaction=batchmode %TPX%%%i.tex 1>nul
     if not exist "%TPX%%%i.log" (
@@ -142,22 +145,23 @@ for /L %%i in (%FIRST%,1,%LAST%) do (
       if exist "%TODIR%%TO%-%%i.pdf" del "%TODIR%%TO%-%%i.pdf"
       if exist "%TODIR%%TO%-%%i.pdf" (
         echo Output file already exists, and cannot be overwritten because it seems to be locked.
-        set ERROR=1
+        set BCERROR=1
         del "%TPX%%%i.pdf"
       ) else (
         move "%TPX%%%i.pdf" "%TODIR%%TO%-%%i.pdf" 1>nul
       )
     ) else (
       echo Process of page %%i failed, skipping...
-      set ERROR=1
+      set BCERROR=1
     )
   ) else (
     if !VALIDBOX! equ 1 (
       echo \proc %%i [!PROCBBOX!] >>%TPX%n.tex
     ) else (
-      echo Invalid %BBOX% is returned by Ghostscript on page %%i.
+      if !BCWARN! neq 2 echo Invalid %BBOX% is returned by Ghostscript on page %%i.
       echo I will try to include this page in its original size...
       echo \procinclude %%i >>%TPX%n.tex
+      set BCWARN=1
     )
   )
 )
@@ -176,17 +180,18 @@ if %SEPARATE% equ 0 (
     if exist "%TODIR%%TO%.pdf" del "%TODIR%%TO%.pdf"
     if exist "%TODIR%%TO%.pdf" (
       echo Output file already exists, and cannot be overwritten because it seems to be locked.
-      set ERROR=1
+      set BCERROR=1
       del "%TPX%n.pdf"
     ) else (
       move "%TPX%n.pdf" "%TODIR%%TO%.pdf" 1>nul
     )
   ) else (
     echo Process failed.
-    set ERROR=1
+    set BCERROR=1
   )
 )
 if %DEBUGLEV% equ 0 for /L %%i in (%FIRST%,1,%LAST%) do del "%TPX%%%i.txt" "%TPX%%%i-box.txt"
 if %DEBUGLEV% equ 0 del "%TPX%n.tex" "%CROPTEMP%.pdf"
-if %ERROR% equ 1 exit /B
+if %BCERROR% equ 1 exit /B
 echo ==^> %FIRST%-%LAST% page(s) written on "%TODIR%%TO%.pdf".
+if %BCWARN% equ 1 echo Some pages may not be cropped, because Ghostscript did not work properly.
