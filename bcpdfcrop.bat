@@ -1,5 +1,5 @@
 @echo off
-echo bcpdfcrop v0.1.8 (2015-08-05) written by Hironobu YAMASHITA
+echo bcpdfcrop v0.1.9 (2015-08-05) written by Hironobu YAMASHITA
 setlocal enabledelayedexpansion
 set BATNAME=%~n0
 set BCERROR=0
@@ -116,12 +116,15 @@ for /L %%i in (%FIRST%,1,%LAST%) do (
   set PROCBBOX=%%%BBOX%: 0 0 0 0
   set /P PROCBBOX=<"%TPX%%%i-box.txt"
   set PROCBBOX=!PROCBBOX:* =!
-  if "!PROCBBOX!"=="0 0 0 0" (
-    set VALIDBOX=0
-  ) else (
-    if "!PROCBBOX!"=="0.000000 0.000000 0.000000 0.000000" (
-      set VALIDBOX=0
-    ) else (
+  set VALIDBOX=0
+  for /F "tokens=1-4 delims= " %%k in ("!PROCBBOX!") do (
+    set LLX=%%k
+    set LLY=%%l
+    set URX=%%m
+    set URY=%%n
+  )
+  if !LLX! lss !URX! (
+    if !LLY! lss !URY! (
       set VALIDBOX=1
     )
   )

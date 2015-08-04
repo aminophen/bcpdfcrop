@@ -106,6 +106,9 @@ $ bcpdfcrop [/d] [/h] [/s] in.pdf [out.pdf] [page-range] [left-margin] [top-marg
     - エラーや警告のメッセージを改善。
 - v0.1.8 (2015-08-05)
     - エラーメッセージを標準出力でなく標準エラー出力に書き込むように変更。
+- v0.1.9 (2015-08-05)
+    - Ghostscript が返した BBOX 値がおかしな場合の処理を，本家 pdfcrop に近づける変更。
+      v0.1.3 で対策した「BBOX が `0 0 0 0` や `0.000000 0.000000 0.000000 0.000000` の場合」に限らず，正常に処理できない BBOX 値への対策が改善されたはずです。
 
 --------------------
 Hironobu YAMASHITA (aka. "Acetaminophen" or "@aminophen")
