@@ -104,6 +104,8 @@ $ bcpdfcrop [/d] [/h] [/s] in.pdf [out.pdf] [page-range] [left-margin] [top-marg
         - rungs による描画領域の取得に失敗した場合，ページをクロップせずに元のサイズで取り込みます。
 - v0.1.7 (2015-08-04)
     - エラーや警告のメッセージを改善。
+- v0.1.8 (2015-08-05)
+    - エラーメッセージを標準出力でなく標準エラー出力に書き込むように変更。
 
 --------------------
 Hironobu YAMASHITA (aka. "Acetaminophen" or "@aminophen")
