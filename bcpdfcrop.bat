@@ -1,5 +1,5 @@
 @echo off
-echo bcpdfcrop v0.2.0 (2015-08-05) written by Hironobu YAMASHITA
+echo bcpdfcrop v0.2.1 (2015-08-06) written by Hironobu YAMASHITA
 setlocal enabledelayedexpansion
 rem ====================================================================
 rem You can set program names in this section.
@@ -35,8 +35,10 @@ if /I "%1"=="/s" (
 )
 set FROMDIR=%~dp1
 set FROM=%~n1
+set FROMEXT=%~x1
 set TODIR=%~dp2
 set TO=%~n2
+set TOEXT=%~x2
 set RANGE=%~3
 set TPX=_bcpc
 set CROPTEMP=_croptemp
@@ -48,11 +50,15 @@ if "%FROM%"=="" (
   echo     /s    Save multipage PDF into separate PDF files.
   exit /B
 )
+if "%FROMEXT%"=="" set FROMEXT=.pdf
+if /I not "%FROMEXT%"==".pdf" echo Input file should be a PDF file, using ".pdf" instead. 1>&2
 if not exist "%FROMDIR%%FROM%.pdf" (
   echo Input file "%FROMDIR%%FROM%.pdf" not found. 1>&2
   exit /B
 )
 if not "%TEMP%"=="" cd /D "%TEMP%"
+if "%TOEXT%"=="" set TOEXT=.pdf
+if /I not "%TOEXT%"==".pdf" echo Output file should be a PDF file, using ".pdf" instead. 1>&2
 if "%TO%"=="" set TO=%FROM%-crop
 if "%TODIR%"=="" set TODIR=%FROMDIR%
 if "%TODIR%%TO%"=="%FROMDIR%%FROM%" set TO=%FROM%-crop
@@ -87,11 +93,11 @@ if "%LAST%"=="" (
 )
 if "%LAST%"=="*" set LAST=%NUM%
 if %FIRST% lss 1 (
-  echo Invalid page number, should be ^>= 1.
+  echo Invalid page number, should be ^>= 1. 1>&2
   set FIRST=1
 )
 if %LAST% gtr %NUM% (
-  echo Page %LAST% does not exist, should be ^<= %NUM%.
+  echo Page %LAST% does not exist, should be ^<= %NUM%. 1>&2
   set LAST=%NUM%
 )
 set LMARGIN=%~4
