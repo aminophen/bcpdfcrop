@@ -1,5 +1,5 @@
 @echo off
-echo bcpdfcrop v0.2.1 (2015-08-06) written by Hironobu YAMASHITA
+echo bcpdfcrop v0.2.2 (2015-08-06) written by Hironobu YAMASHITA
 setlocal enabledelayedexpansion
 rem ====================================================================
 rem You can set program names in this section.
@@ -15,19 +15,19 @@ set BCWARN=0
 if "%PDFTEXCMD%"=="" set PDFTEXCMD=pdftex
 if "%XBBCMD%"=="" set XBBCMD=extractbb
 if "%GSCMD%"=="" set GSCMD=rungs
-if /I "%1"=="/d" (
+if /I "%~1"=="/d" (
   set DEBUGLEV=1
   shift
 ) else (
   set DEBUGLEV=0
 )
-if /I "%1"=="/h" (
+if /I "%~1"=="/h" (
   set BBOX=HiResBoundingBox
   shift
 ) else (
   set BBOX=BoundingBox
 )
-if /I "%1"=="/s" (
+if /I "%~1"=="/s" (
   set SEPARATE=1
   shift
 ) else (
