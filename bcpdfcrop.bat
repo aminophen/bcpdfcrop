@@ -1,9 +1,20 @@
 @echo off
-echo bcpdfcrop v0.1.9 (2015-08-05) written by Hironobu YAMASHITA
+echo bcpdfcrop v0.2.0 (2015-08-05) written by Hironobu YAMASHITA
 setlocal enabledelayedexpansion
+rem ====================================================================
+rem You can set program names in this section.
+rem Default values are "pdftex", "extractbb", "rungs" respectively.
+rem Maybe useful when using "gswin32c" or "gswin64c" instead of "rungs".
+set PDFTEXCMD=
+set XBBCMD=
+set GSCMD=
+rem ====================================================================
 set BATNAME=%~n0
 set BCERROR=0
 set BCWARN=0
+if "%PDFTEXCMD%"=="" set PDFTEXCMD=pdftex
+if "%XBBCMD%"=="" set XBBCMD=extractbb
+if "%GSCMD%"=="" set GSCMD=rungs
 if /I "%1"=="/d" (
   set DEBUGLEV=1
   shift
@@ -49,7 +60,7 @@ copy "%FROMDIR%%FROM%.pdf" "%CROPTEMP%.pdf" 1>nul
 if exist "%CROPTEMP%.xbb" del "%CROPTEMP%.xbb"
 set NUM=1
 set VERSION=4
-extractbb "%CROPTEMP%.pdf"
+%XBBCMD% "%CROPTEMP%.pdf"
 if exist "%CROPTEMP%.xbb" (
   type "%CROPTEMP%.xbb" | find "%%Pages: " >%CROPTEMP%-pages.txt
   set /P NUM=<"%CROPTEMP%-pages.txt"
@@ -102,7 +113,7 @@ echo \def\procinclude#1{\pdfhorigin0bp \pdfvorigin0bp >>%TPX%n.tex
 echo \setbox0=\hbox{\pdfximage page #1 mediabox{%CROPTEMP%.pdf}\pdfrefximage\pdflastximage} >>%TPX%n.tex
 echo \pdfpagewidth\wd0\relax \pdfpageheight\dimexpr\ht0+\dp0\relax \shipout\hbox{\raise\dp0\box0\relax}} >>%TPX%n.tex
 for /L %%i in (%FIRST%,1,%LAST%) do (
-  rungs -dBATCH -dNOPAUSE -q -sDEVICE=bbox -dFirstPage=%%i -dLastPage=%%i "%CROPTEMP%.pdf" 2>%TPX%%%i.txt
+  %GSCMD% -dBATCH -dNOPAUSE -q -sDEVICE=bbox -dFirstPage=%%i -dLastPage=%%i "%CROPTEMP%.pdf" 2>%TPX%%%i.txt
   type %TPX%%%i.txt | find "%%%BBOX%: " >%TPX%%%i-box.txt
   for %%f in (%TPX%%%i.txt) do set SIZEGS=%%~zf
   for %%f in (%TPX%%%i-box.txt) do set SIZEBOX=%%~zf
@@ -137,7 +148,7 @@ for /L %%i in (%FIRST%,1,%LAST%) do (
       echo \input %TPX%n.tex \procinclude %%i \end >%TPX%%%i.tex
       set BCWARN=1
     )
-    pdftex -no-shell-escape -interaction=batchmode %TPX%%%i.tex 1>nul
+    %PDFTEXCMD% -no-shell-escape -interaction=batchmode %TPX%%%i.tex 1>nul
     if not exist "%TPX%%%i.log" (
       echo Failed to run pdfTeX, exiting... 1>&2
       if %DEBUGLEV% equ 0 for /L %%j in (%FIRST%,1,%%i) do del "%TPX%%%j.txt" "%TPX%%%j-box.txt" "%TPX%%%j.tex"
@@ -172,7 +183,7 @@ for /L %%i in (%FIRST%,1,%LAST%) do (
 if %SEPARATE% equ 0 (
   echo \end >>%TPX%n.tex
   if exist "%TPX%n.log" del "%TPX%n.log"
-  pdftex -no-shell-escape -interaction=batchmode %TPX%n.tex 1>nul
+  %PDFTEXCMD% -no-shell-escape -interaction=batchmode %TPX%n.tex 1>nul
   if not exist "%TPX%n.log" (
     echo Failed to run pdfTeX, exiting... 1>&2
     if %DEBUGLEV% equ 0 for /L %%i in (%FIRST%,1,%LAST%) do del "%TPX%%%i.txt" "%TPX%%%i-box.txt"

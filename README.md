@@ -20,6 +20,12 @@ ZR さん (@zr-tex8r) のバッチファイルをもとに fork した tcpdfcrop
     - pdftex.exe
     - extractbb.exe
     - rungs.exe (gswin32c.exe or gswin64c.exe)
+- v0.2.0 以降では，呼び出すプログラムのコマンド名をユーザが自由に変更できます。
+  バッチファイル冒頭に用意した欄に PDFTEXCMD，XBBCMD，GSCMD という変数の値を書き込めば，そのプログラムを実行します。
+  値を空にした状態ではデフォルトのプログラムが適用されます。
+    - PDFTEXCMD は pdfTeX のコマンド名を指定します。デフォルトは pdftex ですが，luatex でも動く可能性があります。
+    - XBBCMD は extractbb のコマンド名を指定します。
+    - GSCMD は Ghostscript のコマンド名を指定します。デフォルトは rungs ですが，gswin32c あるいは gswin64c とすると都合が良いかもしれません。
 
 ### 使い方
 
@@ -109,6 +115,8 @@ $ bcpdfcrop [/d] [/h] [/s] in.pdf [out.pdf] [page-range] [left-margin] [top-marg
 - v0.1.9 (2015-08-05)
     - Ghostscript が返した BBOX 値がおかしな場合の処理を，本家 pdfcrop に近づける変更。
       v0.1.3 で対策した「BBOX が `0 0 0 0` や `0.000000 0.000000 0.000000 0.000000` の場合」に限らず，正常に処理できない BBOX 値への対策が改善されたはずです。
+- v0.2.0 (2015-08-05)
+    - PDFTEXCMD，XBBCMD，GSCMD という変数の値をユーザが指定した場合，そのプログラムを呼び出して実行するように変更。
 
 --------------------
 Hironobu YAMASHITA (aka. "Acetaminophen" or "@aminophen")
