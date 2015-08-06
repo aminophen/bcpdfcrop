@@ -61,6 +61,10 @@ $ bcpdfcrop [/d] [/h] [/s] in.pdf [out.pdf] [page-range] [left-margin] [top-marg
 この場合，PDF ファイルの全ページがクロップされて単一ファイルになって出てきます。
 ただし，一度に複数ファイルをドラッグ＆ドロップしても正しく処理されるのは一つだけです（むしろ二番目の PDF ファイルは，クロップ後のファイルで上書きされてしまいますので，注意してください）。
 
+付録として，複数ファイルをドラッグ＆ドロップして処理可能な bcpdfcrop-multi.bat というバッチファイルも公開します。
+本体の bcpdfcrop.bat をパスの通った場所に置いておけば，bcpdfcrop-multi は bcpdfcrop を内部で繰り返し呼び出して複数ファイルをクロップします。
+もちろん bcpdfcrop-multi は bcpdfcrop に依存しますので，パスを見つけられなければ何もできません（このほうが当然ながら圧倒的に開発が楽だから）。
+
 ### その他の特徴
 
 - Ghostscript は rungs.exe を使用していますので，TeX Live でも W32TeX でも利用できると思います。
@@ -84,8 +88,8 @@ $ bcpdfcrop [/d] [/h] [/s] in.pdf [out.pdf] [page-range] [left-margin] [top-marg
 
 ### 更新履歴
 
-最初のバージョン bcpdfcrop v0.1.0 (2015-07-28) は Gist の tcpdfcrop v0.9.3 (2015-07-25) からのフォークです。
-以前の tcpdfcrop の更新履歴は Gist の Revision 記録およびコメント欄を，以降の bcpdfcrop の更新履歴は changelog.txt を参照してください。
+bcpdfcrop および bcpdfcrop-multi の更新履歴は changelog.txt を参照してください。
+以前の tcpdfcrop の更新履歴は Gist の Revision 記録およびコメント欄を参照してください。
 
 --------------------
 Hironobu YAMASHITA (aka. "Acetaminophen" or "@aminophen")
