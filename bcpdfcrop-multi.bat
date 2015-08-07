@@ -1,7 +1,9 @@
 @echo off
-echo bcpdfcrop-multi v0.0.1 (2015-08-07) written by Hironobu YAMASHITA
+echo bcpdfcrop-multi v0.0.2 (2015-08-08) written by Hironobu YAMASHITA
 setlocal
+set BATDIR=%~dp0
 set BATNAME=%~n0
+set PATH=%PATH%;%BATDIR%
 if "%~n1"=="" (
   echo Drag and drop PDF files onto this %BATNAME%.bat.
   echo You will get cropped PDF files [bcpdfcrop.bat is required].
