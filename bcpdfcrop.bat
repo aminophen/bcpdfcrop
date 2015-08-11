@@ -1,5 +1,5 @@
 @echo off
-echo bcpdfcrop v0.2.2 (2015-08-06) written by Hironobu YAMASHITA
+echo bcpdfcrop v0.2.3 (2015-08-11) written by Hironobu YAMASHITA
 setlocal enabledelayedexpansion
 rem ====================================================================
 rem You can set program names in this section.
@@ -133,15 +133,12 @@ for /L %%i in (%FIRST%,1,%LAST%) do (
   set PROCBBOX=%%%BBOX%: 0 0 0 0
   set /P PROCBBOX=<"%TPX%%%i-box.txt"
   set PROCBBOX=!PROCBBOX:* =!
-  set VALIDBOX=0
-  for /F "tokens=1-4 delims= " %%k in ("!PROCBBOX!") do (
-    set LLX=%%k
-    set LLY=%%l
-    set URX=%%m
-    set URY=%%n
-  )
-  if !LLX! lss !URX! (
-    if !LLY! lss !URY! (
+  if "!PROCBBOX!"=="0 0 0 0" (
+    set VALIDBOX=0
+  ) else (
+    if "!PROCBBOX!"=="0.000000 0.000000 0.000000 0.000000" (
+      set VALIDBOX=0
+    ) else (
       set VALIDBOX=1
     )
   )
