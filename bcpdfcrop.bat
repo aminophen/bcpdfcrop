@@ -1,5 +1,5 @@
 @echo off
-echo bcpdfcrop v0.2.3 (2015-08-11) written by Hironobu YAMASHITA
+echo bcpdfcrop v0.3.0 (2015-08-31) written by Hironobu YAMASHITA
 setlocal enabledelayedexpansion
 rem ====================================================================
 rem You can set program names in this section.
@@ -33,6 +33,22 @@ if /I "%~1"=="/s" (
 ) else (
   set SEPARATE=0
 )
+if /I "%~1"=="/m" (
+  set MARGINS=%~n2
+  if "!MARGINS!"=="" echo Invalid format for option /m. 1>&2
+  for /F "tokens=1-4 delims= " %%k in ("!MARGINS!") do (
+    set LMARGIN=%%k
+    set TMARGIN=%%l
+    set RMARGIN=%%m
+    set BMARGIN=%%n
+  )
+  if "!LMARGIN!"=="" set LMARGIN=0
+  if "!TMARGIN!"=="" set TMARGIN=!LMARGIN!
+  if "!RMARGIN!"=="" set RMARGIN=!LMARGIN!
+  if "!BMARGIN!"=="" set BMARGIN=!TMARGIN!
+  shift
+  shift
+)
 set FROMDIR=%~dp1
 set FROM=%~n1
 set FROMEXT=%~x1
@@ -43,11 +59,25 @@ set RANGE=%~3
 set TPX=_bcpc
 set CROPTEMP=_croptemp
 if "%FROM%"=="" (
-  echo Usage: %BATNAME% [/d] [/h] [/s] in.pdf [out.pdf] [page-range] [left-margin] [top-margin] [right-margin] [bottom-margin]
-  echo   Options:
-  echo     /d    Do NOT delete temporary files for debug.
-  echo     /h    Use HiResBoundingBox instead of BoundingBox.
-  echo     /s    Save multipage PDF into separate PDF files.
+  echo Usage: %BATNAME% [^<options^>] in.pdf [out.pdf] [^<additional arguments^>]
+  echo   Options: ^(must be specified in this order^)
+  echo     /d      Do NOT delete temporary files for debug.       ^(default: false^)
+  echo     /h      Use HiResBoundingBox instead of BoundingBox.   ^(default: false^)
+  echo     /s      Save multipage PDF into separate PDF files.    ^(default: false^)
+  echo     /m "<left> <top> <right> <bottom>"                 ^(default: "0 0 0 0"^)
+  echo             Add extra margins, unit is bp. If only one number is given,
+  echo             then it is used for all margins. In the case of two numbers,
+  echo             they are also used for right and bottom.
+  echo   Additional arguments:
+  echo     #3      Specify page range to be processed.              ^(default: all^)
+  echo               "3-10" : from page 3 to page 10
+  echo               "3-*"  : from page 3 to the last page
+  echo               "*-10" : from the first page to page 10
+  echo               "*-*"  : all pages
+  echo               "*"    : all pages
+  echo               "3"    : only page 3
+  echo   Notice: margins can be specified using additional arguments #4-#7,
+  echo           and these specifications supersedes for backward compatibility.
   exit /B
 )
 if "%FROMEXT%"=="" set FROMEXT=.pdf
@@ -83,7 +113,6 @@ for /F "tokens=1,2 delims=-" %%m in ("%RANGE%") do (
   set LAST=%%n
 )
 if "%FIRST%"=="" set FIRST=1
-if "%FIRST%"=="*" set FIRST=1
 if "%LAST%"=="" (
   if "%RANGE%"=="" (
     set LAST=%NUM%
@@ -91,6 +120,7 @@ if "%LAST%"=="" (
     set LAST=%FIRST%
   )
 )
+if "%FIRST%"=="*" set FIRST=1
 if "%LAST%"=="*" set LAST=%NUM%
 if %FIRST% lss 1 (
   echo Invalid page number, should be ^>= 1. 1>&2
@@ -100,14 +130,10 @@ if %LAST% gtr %NUM% (
   echo Page %LAST% does not exist, should be ^<= %NUM%. 1>&2
   set LAST=%NUM%
 )
-set LMARGIN=%~4
-set TMARGIN=%~5
-set RMARGIN=%~6
-set BMARGIN=%~7
-if "%LMARGIN%"=="" set LMARGIN=0
-if "%TMARGIN%"=="" set TMARGIN=0
-if "%RMARGIN%"=="" set RMARGIN=0
-if "%BMARGIN%"=="" set BMARGIN=0
+if not "%~4"=="" set LMARGIN=%~4
+if not "%~5"=="" set TMARGIN=%~5
+if not "%~6"=="" set RMARGIN=%~6
+if not "%~7"=="" set BMARGIN=%~7
 echo \pdfoutput=1 >%TPX%n.tex
 echo \pdfminorversion=%VERSION% >>%TPX%n.tex
 echo \def\proc #1 [#2 #3 #4 #5]{\pdfhorigin-#2bp \pdfvorigin#3bp \pdfpagewidth\dimexpr#4bp-#2bp\relax \pdfpageheight\dimexpr#5bp-#3bp\relax >>%TPX%n.tex
