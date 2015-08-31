@@ -1,5 +1,5 @@
 @echo off
-echo bcpdfcrop v0.3.0 (2015-08-31) written by Hironobu YAMASHITA
+echo bcpdfcrop v0.3.1 (2015-08-31) written by Hironobu YAMASHITA
 setlocal enabledelayedexpansion
 rem ====================================================================
 rem You can set program names in this section.
@@ -15,39 +15,62 @@ set BCWARN=0
 if "%PDFTEXCMD%"=="" set PDFTEXCMD=pdftex
 if "%XBBCMD%"=="" set XBBCMD=extractbb
 if "%GSCMD%"=="" set GSCMD=rungs
-if /I "%~1"=="/d" (
-  set DEBUGLEV=1
-  shift
-) else (
-  set DEBUGLEV=0
-)
-if /I "%~1"=="/h" (
-  set BBOX=HiResBoundingBox
-  shift
-) else (
-  set BBOX=BoundingBox
-)
-if /I "%~1"=="/s" (
-  set SEPARATE=1
-  shift
-) else (
-  set SEPARATE=0
-)
-if /I "%~1"=="/m" (
-  set MARGINS=%~n2
-  if "!MARGINS!"=="" echo Invalid format for option /m. 1>&2
-  for /F "tokens=1-4 delims= " %%k in ("!MARGINS!") do (
-    set LMARGIN=%%k
-    set TMARGIN=%%l
-    set RMARGIN=%%m
-    set BMARGIN=%%n
+set OPTIONEND=0
+set DEBUGLEV=0
+set BBOX=BoundingBox
+set SEPARATE=0
+set MARGINTRUE=0
+for %%f in (%*) do (
+  if !OPTIONEND! equ 0 (
+    set TEMPARG=%%~f
+    if "!TEMPARG:~0,1!"=="/" (
+      if !MARGINTRUE! equ 1 (
+        echo Invalid format for option /m. 1>&2
+        set MARGINTRUE=0
+      )
+      if /I "!TEMPARG!"=="/d" (
+        set DEBUGLEV=1
+        shift
+      ) else (
+        if /I "!TEMPARG!"=="/h" (
+          set BBOX=HiResBoundingBox
+          shift
+        ) else (
+          if /I "!TEMPARG!"=="/s" (
+            set SEPARATE=1
+            shift
+          ) else (
+            if /I "!TEMPARG!"=="/m" (
+              set MARGINTRUE=1
+              shift
+            ) else (
+              echo Unknown option: "!TEMPARG!" 1>&2
+              shift
+            )
+          )
+        )
+      )
+    ) else (
+      if !MARGINTRUE! equ 1 (
+        set MARGINS=%%~f
+        if "!MARGINS!"=="" echo Invalid format for option /m. 1>&2
+        for /F "tokens=1-4 delims= " %%k in ("!MARGINS!") do (
+          set LMARGIN=%%k
+          set TMARGIN=%%l
+          set RMARGIN=%%m
+          set BMARGIN=%%n
+        )
+        if "!LMARGIN!"=="" set LMARGIN=0
+        if "!TMARGIN!"=="" set TMARGIN=!LMARGIN!
+        if "!RMARGIN!"=="" set RMARGIN=!LMARGIN!
+        if "!BMARGIN!"=="" set BMARGIN=!TMARGIN!
+        set MARGINTRUE=0
+        shift
+      ) else (
+        set OPTIONEND=1
+      )
+    )
   )
-  if "!LMARGIN!"=="" set LMARGIN=0
-  if "!TMARGIN!"=="" set TMARGIN=!LMARGIN!
-  if "!RMARGIN!"=="" set RMARGIN=!LMARGIN!
-  if "!BMARGIN!"=="" set BMARGIN=!TMARGIN!
-  shift
-  shift
 )
 set FROMDIR=%~dp1
 set FROM=%~n1
@@ -60,7 +83,7 @@ set TPX=_bcpc
 set CROPTEMP=_croptemp
 if "%FROM%"=="" (
   echo Usage: %BATNAME% [^<options^>] in.pdf [out.pdf] [^<additional arguments^>]
-  echo   Options: ^(must be specified in this order^)
+  echo   Options:
   echo     /d      Do NOT delete temporary files for debug.       ^(default: false^)
   echo     /h      Use HiResBoundingBox instead of BoundingBox.   ^(default: false^)
   echo     /s      Save multipage PDF into separate PDF files.    ^(default: false^)

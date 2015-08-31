@@ -59,14 +59,15 @@ $ bcpdfcrop [<options>] in.pdf [out.pdf] [<additional arguments>]
     - `$ bcpdfcrop in.pdf out.pdf 3-*`  ： 3 ページ目から（最後まで）を処理
     - `$ bcpdfcrop in.pdf out.pdf *-10` ： （最初から）10 ページ目までを処理
     - `$ bcpdfcrop in.pdf out.pdf *-*`  ： 全ページを処理
-    - `$ bcpdfcrop in.pdf out.pdf *`    ： 全ページを処理（v0.2.3 以前では1ページ目のみ処理；v0.3.0 で変更）
+    - `$ bcpdfcrop in.pdf out.pdf *`    ： 全ページを処理（※v0.3.0 以降の仕様）
     - `$ bcpdfcrop in.pdf out.pdf 3`    ： 3 ページ目のみを処理
 - 第4-7引数 `<***-margin>` は，余白を bp 単位で指定します。全ページに同じ余白が付きます。左・上・右・下の順になります。
   後述する `/m` オプションによる余白指定のほうが高機能ですので，`/m` オプションの利用を推奨します。
   ただし，仮に `/m` オプションとこれらの引数が同時に指定された場合は，引数の値によって `/m` オプションの値は上書きされます。
     - `$ bcpdfcrop in.pdf out.pdf 3-10 5 10 15 20` ： 「左に5bp，上に10bp，右に15bp，下に20bp」の余白が付きます。
 - 引数を空にしたい場合は，単に `""` とすると期待通りになるかもしれません。
-- オプションとしては `/d`，`/h`，`/s`，`/m` を最初に指定することができます（複数使う場合は `/d`，`/h`, `/s`，`/m` の順にしてください）。
+- オプションとしては `/d`，`/h`，`/s`，`/m` を最初に指定することができます。
+  これらのオプションは順不同で指定できます（※v0.3.1 以降の仕様）。
     - `/d` オプションは，デバッグ用に一時ファイルを削除せず残します (debug) 。
     - `/h` オプションは，BoundingBox の代わりに HiResBoundingBox を使います (hires) 。
     - `/s` オプションは，複数ページ PDF の処理で各ページを個別のファイルに分割して出力します (separate, split) 。
@@ -111,7 +112,7 @@ $ bcpdfcrop [<options>] in.pdf [out.pdf] [<additional arguments>]
 
 ### 更新履歴
 
-bcpdfcrop および bcpdfcrop-multi の更新履歴は changelog.txt を参照してください。
+bcpdfcrop および bcpdfcrop-multi の更新履歴は changelog.md を参照してください。
 以前の tcpdfcrop の更新履歴は Gist の Revision 記録およびコメント欄を参照してください。
 
 --------------------
