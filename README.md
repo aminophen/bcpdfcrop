@@ -1,7 +1,7 @@
 ## bcpdfcrop.bat --- もうひとつの PDF クロップツール
 
 「Perl 無しの Windows」で pdfcrop の類似処理を行うバッチファイルです。
-Heiko Oberdiek (@oberdiek) さんによるオリジナルの Perl スクリプト pdfcrop.pl を参考にしています。
+Heiko Oberdiek (@oberdiek) さんによるオリジナルの Perl スクリプト pdfcrop.pl の出力を参考にしています。
 ZR さん (@zr-tex8r) のバッチファイルをもとに fork した tcpdfcrop.bat がベースです。
 
 - bcpdfcrop.bat 一次配布元
@@ -105,6 +105,12 @@ $ bcpdfcrop [<options>] in.pdf [out.pdf] [<additional arguments>]
 - 出来上がる PDF ファイルのサイズが異なります。
   本家 Perl スクリプト版とバッチファイル版で同じ PDF を処理すると，バッチファイル版で作った方がファイルサイズが小さくなります（余分な情報を埋め込まないからです；なんかラッキー）。
   ただし，Perl 版のほうが処理は高速です。
+
+### 開発目標
+
+注意していただきたいのですが，pdfcrop.pl の再現は目指していません。
+pdfcrop.pl のコード自体も読まずに，独自に実装しています（そもそも Perl 読めないので）。
+基本的な仕組みは ZR さんの tcpdfcrop.bat を流用し，中間生成する pdfTeX ソースの検討段階で pdfcrop.pl の結果を一部参考にしました。
 
 ### ライセンス
 
