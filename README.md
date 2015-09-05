@@ -29,9 +29,9 @@ bcpdfcrop.bat をパスの通ったディレクトリに置けば，インスト
 デフォルトでは pdftex.exe，extractbb.exe，rungs.exe という TeX 関連プログラムと Ghostscript にパスが通っていることを想定しています。
 もしそうでない場合は，バッチファイル冒頭に用意されている欄でコマンド名を変更してください（v0.2.0 以降）。
 
-- `PDFTEXCMD` は pdfTeX のコマンド名を指定します。デフォルトは pdftex ですが，luatex でも動く可能性があります。
-- `XBBCMD` は extractbb のコマンド名を指定します。
-- `GSCMD` は Ghostscript のコマンド名を指定します。デフォルトは rungs ですが，gswin32c あるいは gswin64c とすると都合が良いかもしれません。
+- `PDFTEXCMD` は pdfTeX のコマンド名を指定します。デフォルトは pdftex.exe ですが，luatex.exe でも動く可能性があります。
+- `XBBCMD` は extractbb のコマンド名を指定します。デフォルトは extractbb.exe です。
+- `GSCMD` は Ghostscript のコマンド名を指定します。デフォルトは rungs.exe ですが，gswin32c.exe あるいは gswin64c.exe とすると都合が良いかもしれません。
 
 値を空にした状態（初期状態）ではデフォルトのプログラムが適用されます。
 

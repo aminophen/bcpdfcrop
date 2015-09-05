@@ -1,10 +1,12 @@
 @echo off
-echo bcpdfcrop v0.3.1 (2015-08-31) written by Hironobu YAMASHITA
+echo bcpdfcrop v0.3.2 (2015-09-06) written by Hironobu YAMASHITA
 setlocal enabledelayedexpansion
 rem ====================================================================
 rem You can set program names in this section.
 rem Default values are "pdftex", "extractbb", "rungs" respectively.
 rem Maybe useful when using "gswin32c" or "gswin64c" instead of "rungs".
+rem  e.g. To set full-path for Ghostscript win32 executable:
+rem    set GSCMD=C:\Program Files (x86)\gs\gs9.16\bin\gswin32c.exe
 set PDFTEXCMD=
 set XBBCMD=
 set GSCMD=
@@ -12,9 +14,20 @@ rem ====================================================================
 set BATNAME=%~n0
 set BCERROR=0
 set BCWARN=0
-if "%PDFTEXCMD%"=="" set PDFTEXCMD=pdftex
-if "%XBBCMD%"=="" set XBBCMD=extractbb
-if "%GSCMD%"=="" set GSCMD=rungs
+if "%PDFTEXCMD%"=="" set PDFTEXCMD=pdftex.exe
+if "%XBBCMD%"=="" set XBBCMD=extractbb.exe
+if "%GSCMD%"=="" set GSCMD=rungs.exe
+for %%f in ("%PDFTEXCMD%","%XBBCMD%","%GSCMD%") do (
+  if "%%~$PATH:f"=="" (
+    echo %%f not found. 1>&2
+    set BCERROR=1
+  )
+)
+if %BCERROR% equ 1 (
+  echo Programs listed above are necessary for %BATNAME%. 1>&2
+  echo Make sure that they can be found in PATH, or give me full-path for them. 1>&2
+  exit /B
+)
 set OPTIONEND=0
 set DEBUGLEV=0
 set BBOX=BoundingBox
