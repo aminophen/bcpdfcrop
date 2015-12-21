@@ -1,5 +1,5 @@
 @echo off
-echo bcpdfcrop v0.3.2 (2015-09-06) written by Hironobu YAMASHITA
+echo bcpdfcrop v0.3.3 (2015-12-21) written by Hironobu YAMASHITA
 setlocal enabledelayedexpansion
 rem ====================================================================
 rem You can set program names in this section.
@@ -170,6 +170,10 @@ if not "%~4"=="" set LMARGIN=%~4
 if not "%~5"=="" set TMARGIN=%~5
 if not "%~6"=="" set RMARGIN=%~6
 if not "%~7"=="" set BMARGIN=%~7
+if "%LMARGIN%"=="" set LMARGIN=0
+if "%TMARGIN%"=="" set TMARGIN=0
+if "%RMARGIN%"=="" set RMARGIN=0
+if "%BMARGIN%"=="" set BMARGIN=0
 echo \pdfoutput=1 >%TPX%n.tex
 echo \pdfminorversion=%VERSION% >>%TPX%n.tex
 echo \def\proc #1 [#2 #3 #4 #5]{\pdfhorigin-#2bp \pdfvorigin#3bp \pdfpagewidth\dimexpr#4bp-#2bp\relax \pdfpageheight\dimexpr#5bp-#3bp\relax >>%TPX%n.tex
