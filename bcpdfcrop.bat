@@ -1,5 +1,5 @@
 @echo off
-echo bcpdfcrop v0.3.3 (2015-12-21) written by Hironobu YAMASHITA
+echo bcpdfcrop v0.3.4 (2015-12-25) written by Hironobu YAMASHITA
 setlocal enabledelayedexpansion
 rem ====================================================================
 rem You can set program names in this section.
@@ -181,7 +181,7 @@ echo \advance\pdfhorigin by %LMARGIN%bp\relax \advance\pdfpagewidth by %LMARGIN%
 echo \advance\pdfvorigin by -%BMARGIN%bp\relax \advance\pdfpageheight by %BMARGIN%bp\relax \advance\pdfpageheight by %TMARGIN%bp\relax >>%TPX%n.tex
 echo \setbox0=\hbox{\pdfximage page #1 mediabox{%CROPTEMP%.pdf}\pdfrefximage\pdflastximage} >>%TPX%n.tex
 echo \ht0=\pdfpageheight \shipout\box0\relax} >>%TPX%n.tex
-echo \def\procinclude#1{\pdfhorigin0bp \pdfvorigin0bp >>%TPX%n.tex
+echo \def\procinclude#1 {\pdfhorigin0bp \pdfvorigin0bp >>%TPX%n.tex
 echo \setbox0=\hbox{\pdfximage page #1 mediabox{%CROPTEMP%.pdf}\pdfrefximage\pdflastximage} >>%TPX%n.tex
 echo \pdfpagewidth\wd0\relax \pdfpageheight\dimexpr\ht0+\dp0\relax \shipout\hbox{\raise\dp0\box0\relax}} >>%TPX%n.tex
 for /L %%i in (%FIRST%,1,%LAST%) do (
